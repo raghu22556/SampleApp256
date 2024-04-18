@@ -4,16 +4,31 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+- main  
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    npm install -g @ionic/cli
+    npm install
+    ionic build
+    npx cap copy android
+    cd android
+    ./gradlew assembleDebug
+  displayName: 'Build APK'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(System.DefaultWorkingDirectory)/android/app/build/outputs/apk/debug'
+    artifactName: 'apk'
+    publishLocation: 'Container'
+
+
+
