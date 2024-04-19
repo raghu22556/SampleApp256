@@ -21,7 +21,7 @@ steps:
     ionic build
     npx cap copy android
     cd android
-    ./gradlew assembleDebug
+    ./gradlew assembleDebug --info  # Enable verbose logging
   displayName: 'Build APK'
 
 - task: PublishBuildArtifacts@1
