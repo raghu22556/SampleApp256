@@ -18,6 +18,7 @@ steps:
     npm install
     ionic build
     npx cap copy android
+    ionic capacitor copy android
     cd android
     ./gradlew assembleDebug
   displayName: 'Build APK and Copy to Artifacts'
