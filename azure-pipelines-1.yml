@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -21,23 +16,11 @@ steps:
 - script: |
     npm install -g @ionic/cli
     npm install
-  displayName: 'Install Ionic CLI and Dependencies'
-
-- script: |
     ionic build
-  displayName: 'Build Ionic React App'
-
-- script: |
     npx cap copy android
-  displayName: 'Copy Files for Android'
-
-- script: |
     cd android
-  displayName: 'Change Directory to Android'
-
-- script: |
     ./gradlew assembleDebug
-  displayName: 'Build APK with Gradle'
+  displayName: 'Build APK and Copy to Artifacts'
 
 - task: PublishBuildArtifacts@1
   inputs:
