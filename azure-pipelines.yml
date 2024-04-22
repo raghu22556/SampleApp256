@@ -17,7 +17,9 @@ steps:
     ionic build
     npx cap copy android
     cd android
+    ./gradlew assembleDebug  # Build APK using Gradle
   displayName: 'Build APK'
+
 
 - task: PublishBuildArtifacts@1
   inputs:
