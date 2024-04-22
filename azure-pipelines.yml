@@ -1,31 +1,58 @@
+# Disables CI builds entirely, then commits don't trigger a build
+trigger: none
 
-trigger:
-- main  
+# Activates pull request trigger, so any pull request to the master trigger a build
+pr:
+- master
 
+# Specifies which pool (Hosted or Self-hosted) to use for this pipeline. 
+# In this case it is in the scope of the pipeline, but you can use it at the stage or job level
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '14.x'
-  displayName: 'Install Node.js'
+# Specific variables to use, in our case it is just one and at the pipeline level 
+variables:
+  chromeDriverVersion: '80.0.3987.106'
 
-- script: |
-    npm install -g @ionic/cli
-    npm install
-    ionic build
-    npx cap copy android
-    cd android
-    ./gradlew assembleDebug  # Build APK using Gradle
-  displayName: 'Build APK'
+# Specifies a linear sequence of operations that make up a job
+# We need only one job, so we can use the simplified structure
+jobs:
+- job: Build_And_Test
+  displayName: 'Build and Test'
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      command: install
+      workingDir: '$(System.DefaultWorkingDirectory)'
 
+  - task: Npm@1
+    displayName: 'npm run build'
+    inputs:
+      command: custom
+      customCommand: 'run build'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(System.DefaultWorkingDirectory)/android/app/build/outputs/apk/debug'
-    artifactName: 'apk'
-    publishLocation: 'Container'
+  - script: |
+      npx --no-install ng test --watch=false --reporters=progress,junit
+    displayName: 'Run unit tests'
 
+  - script: |
+      node node_modules/.bin/webdriver-manager update --versions.chrome=$(chromeDriverVersion) --gecko false --standalone false
+    displayName: 'Update chromedriver'
 
+  - script: |
+      npx --no-install ng e2e --webdriverUpdate=false
+    displayName: 'Run e2e tests'
 
+  - task: PublishTestResults@2
+    displayName: 'Publish test results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/TESTS-*.xml'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: 'www/'
+      artifact: 'www'
+      displayName: 'Publish Artifact: www'
