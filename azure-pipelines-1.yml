@@ -1,27 +1,23 @@
 trigger:
-- main
+- main  
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
 
 - script: |
     npm install -g @ionic/cli
     npm install
     ionic build
-    npx cap copy android
-    ionic capacitor copy android
-    cd android
-    ./gradlew assembleDebug
-  displayName: 'Build APK and Copy to Artifacts'
+    ionic capacitor copy android || (echo "Failed to copy to Android directory"; exit 1)
+    cd android || (echo "Android directory not found"; exit 1)
+    ./gradlew assembleDebug || (echo "Failed to execute gradlew"; exit 1)
+  displayName: 'Build APK'
 
 - task: PublishBuildArtifacts@1
   inputs:
