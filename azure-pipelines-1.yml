@@ -17,3 +17,30 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- script: |
+    npm install -g @ionic/cli
+    npm install
+  displayName: 'Install Ionic CLI and Dependencies'
+
+- script: |
+    ionic build
+  displayName: 'Build Ionic React App'
+
+- script: |
+    npx cap copy android
+  displayName: 'Copy Files for Android'
+
+- script: |
+    cd android
+  displayName: 'Change Directory to Android'
+
+- script: |
+    ./gradlew assembleDebug
+  displayName: 'Build APK with Gradle'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(System.DefaultWorkingDirectory)/android/app/build/outputs/apk/debug'
+    artifactName: 'apk'
+    publishLocation: 'Container'
